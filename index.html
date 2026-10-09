@@ -1405,6 +1405,7 @@ html.portal-sso-pending body::before{content:'';visibility:visible!important;pos
 body.tmx-checking-trip #startSection,
 body.tmx-checking-trip #finishSection{display:none!important}
 </style>
+<meta name="tmx-migration-build" content="2026-10-09-github-km">
 </head>
 <body>
 
@@ -3873,7 +3874,11 @@ function toast(msg){
   setTimeout(()=>t.remove(), 2800);
 }
 
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js').catch(()=>{});
+// Migration: retire stale app-shell service workers so the latest GitHub/Vercel HTML is loaded.
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(regs => Promise.all(regs.filter(r => new URL(r.scope).origin === location.origin).map(r => r.unregister()))).catch(()=>{});
+}
+if ('caches' in window) caches.keys().then(keys => Promise.all(keys.filter(k => k.startsWith('telecomax-km-')).map(k => caches.delete(k)))).catch(()=>{});
 </script>
 <script>
 function openRequestedEngineerView(){

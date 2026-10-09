@@ -16,6 +16,7 @@ if(location.hash.indexOf('sso=')>=0){
 html.portal-sso-pending body{visibility:hidden!important}
 html.portal-sso-pending body::before{content:'Signing you in…';visibility:visible!important;position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:#020817;color:#fff;font:700 20px Arial,sans-serif}
 </style>
+<meta name="tmx-migration-build" content="2026-10-09-github-km">
 </head><body><header><div class="brand"><span>TELECOMAX</span> · Allowance Audit</div><button id="logout" class="btn ghost" style="display:none">Logout</button></header><main>
 <section id="login" class="card login"><h2>PM Login</h2><p class="note">Use your management Name + 6-digit PIN.</p><div class="field"><label>Name</label><input id="name" autocomplete="username" placeholder="Enter your name"></div><br><div class="field"><label>PIN</label><input id="pin" type="password" inputmode="numeric" maxlength="6" autocomplete="current-password" placeholder="6-digit PIN"></div><br><button id="loginBtn" class="btn primary">Login</button></section>
 <section id="app" style="display:none"><div class="card"><div class="section-title"><div><h2 style="margin:0">Monthly Allowance Audit</h2></div></div><br><div class="filters">

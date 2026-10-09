@@ -1,0 +1,10 @@
+Telecomax KM migration verification
+
+Upload the CONTENTS of this directory into the ROOT of the GitHub repository connected to Vercel.
+Confirm Vercel production deployment uses the same Git branch and commit.
+Inspect page source for: tmx-migration-build = 2026-10-09-github-km
+Check Network for the exact deployed Apps Script endpoint IDs:
+KM: AKfycbxAInzadr2Er5LCH28IoK7TSZgi_53MT0mjDhMDRXWxEY08hQY7VVH_Q_WqSsGzVlhdbQ
+Custody: AKfycbzA-CXfl2-BgUx-xi48SUikxryD6WH92bdN95vOMyoG0TuX444h3b4-q8zXD9F4amR0Hw
+No serverless proxy was added. Android was not changed.
+If requests still target an old ID after the build marker appears, inspect browser extensions, localStorage configuration, and deployed route-specific files.

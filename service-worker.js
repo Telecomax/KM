@@ -1,36 +1,3 @@
-const CACHE = 'telecomax-km-migrated-20261009-v62';
-const ASSETS = ['./index.html', './manifest.json', './icon-192.png', './icon-512.png'];
-
-self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)));
-  self.skipWaiting();
-});
-
-self.addEventListener('activate', (e) => {
-  e.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
-    )
-  );
-  self.clients.claim();
-});
-
-// App shell: cache-first. Never intercept the Apps Script submit calls (those are cross-origin POSTs and go straight to network).
-self.addEventListener('fetch', (e) => {
-  if (e.request.method !== 'GET') return;
-  e.respondWith(
-    (e.request.mode === 'navigate' ? fetch(e.request).catch(() => caches.match(e.request)) : caches.match(e.request).then((cached) => cached || fetch(e.request)))
-  );
-});
-
-self.addEventListener('notificationclick', (e) => {
-  e.notification.close();
-  e.waitUntil(
-    self.clients.matchAll({ type: 'window' }).then((clientList) => {
-      for (const client of clientList) {
-        if ('focus' in client) return client.focus();
-      }
-      if (self.clients.openWindow) return self.clients.openWindow('./index.html');
-    })
-  );
-});
+// Retire the previous KM service worker and cached app shell.
+self.addEventListener('install', e => { self.skipWaiting(); });
+self.addEventListener('activate', e => { e.waitUntil((async () => { for (const key of await caches.keys()) { if (key.startsWith('telecomax-km-')) await caches.delete(key); } await self.registration.unregister(); await self.clients.claim(); })()); });
