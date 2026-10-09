@@ -1362,11 +1362,8 @@ body #defaultDriver{
 .sso-status-box b{display:block;font-size:20px;margin-bottom:8px}.sso-status-box span{color:#aab4c4}
 </style>
 <script>
-const incomingPortalSSO = /(?:^|[&#])sso=/.test(location.hash);
-if(incomingPortalSSO){
+if(location.hash.indexOf('sso=')>=0){
  document.documentElement.classList.add('portal-sso-pending');
- // A fresh portal handoff must win over an earlier browser login.
- try { ['tmx_km_engineer_token','tmx_km_engineer_name','tmx_km_app_finance_token','tmx_km_app_finance_name','tmx_km_app_admin_token','tmx_km_app_admin_name'].forEach(k=>sessionStorage.removeItem(k)); } catch (_) {}
 }
 </script>
 <style>
@@ -2256,7 +2253,6 @@ function localOpenTripsForCurrentUser(){
 let deferFinishNavigation = false;
 
 async function syncOpenTripStateFromServer(){
-  if(document.documentElement.classList.contains('portal-sso-pending')) return false;
   if(!settings.engineer || !engineerSessionToken){ updateLockState(); return false; }
   const loader=$('tripStateLoader');
   document.body.classList.add('tmx-checking-trip');
@@ -2319,7 +2315,7 @@ function setTodayDateField(){
   $('day').value = dayName(today);
 }
 setTodayDateField();
-if (!incomingPortalSSO) setTimeout(() => { if (!settings.engineer || !engineerSessionToken) { $('settingsModal').style.display='flex'; toast('Log in with your name and PIN first'); } }, 300);
+if (!settings.engineer || !engineerSessionToken) setTimeout(() => { $('settingsModal').style.display='flex'; toast('Log in with your name and PIN first'); }, 300);
 
 // ---------- engineer/driver dropdown lists ----------
 function getCachedLists(){ try { return JSON.parse(localStorage.getItem('benzine_lists')) || {engineers:[],drivers:[],driverDefaults:{},vehicles:[],driverVehicles:{}}; } catch(e){ return {engineers:[],drivers:[],driverDefaults:{},vehicles:[],driverVehicles:{}}; } }
@@ -2978,7 +2974,6 @@ async function confirmTripCommitted(tripId, expectedState){
 }
 
 async function flushQueue(){
-  if(document.documentElement.classList.contains('portal-sso-pending')) return;
   const q = getQueue();
   if (!q.length) return;
   const remaining = [];
@@ -3878,11 +3873,10 @@ function toast(msg){
   setTimeout(()=>t.remove(), 2800);
 }
 
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js', {updateViaCache:'none'}).catch(()=>{});
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js').catch(()=>{});
 </script>
 <script>
 function openRequestedEngineerView(){
- if(incomingPortalSSO) return; // portalAutoLogin owns the initial destination.
  const v=new URLSearchParams(location.search).get('view');
  if(v==='history'){
    if(typeof showTab==='function') { setTimeout(()=>showTab('history'),0); return; }
@@ -3899,29 +3893,20 @@ window.addEventListener('load',()=>setTimeout(openRequestedEngineerView,500));
 function portalSSOStatus_(title,detail){ document.documentElement.classList.remove('portal-sso-pending');
  let x=document.getElementById('portalSsoStatus');
  if(!x){x=document.createElement('div');x.id='portalSsoStatus';x.className='sso-status';document.body.appendChild(x)}
- x.replaceChildren();
- const box=document.createElement('div'); box.className='sso-status-box';
- const heading=document.createElement('b'); heading.textContent=title;
- const message=document.createElement('span'); message.textContent=detail;
- const back=document.createElement('a'); back.href='https://telecomaxportal.vercel.app/';
- back.textContent='Return to portal'; back.style.cssText='display:block;margin-top:20px;color:#fff';
- box.append(heading,message,back); x.append(box);
+ x.innerHTML='<div class="sso-status-box"><b>'+title+'</b><span>'+detail+'</span></div>';
 }
 (async function portalAutoLogin(){
  const m=location.hash.match(/(?:^|[&#])sso=([^&]+)/); if(!m)return;
- history.replaceState(null,'',location.pathname+location.search);
+ const portalToken=decodeURIComponent(m[1]); history.replaceState(null,'',location.pathname+location.search);
  try{
-  const portalToken=decodeURIComponent(m[1]);
   const r=await fetch(DEFAULT_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'portalSSO',portalToken,portalRole:'Engineer'})});
-  if(!r.ok) throw new Error('KM service returned HTTP '+r.status+'. Please return to the portal and try again.');
-  const d=await r.json(); if(!d.ok||d.kind!=='engineer'||!d.engineerToken){portalSSOStatus_('Single Sign-On failed',d.error||'The KM module rejected the portal session.');return;}
+  const d=await r.json(); if(!d.ok||!d.engineerToken){portalSSOStatus_('Single Sign-On failed',d.error||'The KM module rejected the portal session.');return;}
   engineerSessionToken=d.engineerToken; engineerSessionName=d.name||'';
   settings.engineer=engineerSessionName;
   sessionStorage.setItem('tmx_km_engineer_token',engineerSessionToken);
   sessionStorage.setItem('tmx_km_engineer_name',engineerSessionName);
   saveSettingsToStorage(settings);
   fillSettingsForm();
-  $('settingsModal').style.display='none';
   document.documentElement.classList.remove('portal-sso-pending');
   if(typeof updateLoginStatus==='function') updateLoginStatus();
   if(typeof updateLockState==='function') updateLockState();
@@ -3929,7 +3914,7 @@ function portalSSOStatus_(title,detail){ document.documentElement.classList.remo
   const requestedView=new URLSearchParams(location.search).get('view');
   if(requestedView==='history'){
     if(typeof showTab==='function') showTab('history');
-    else if(typeof loadHistory==='function') loadHistory();
+    if(typeof loadHistory==='function') loadHistory();
   }else{
     // For Trips App, resolve server-side open trip first; it will reveal Start or Finish directly.
     if(typeof syncOpenTripStateFromServer==='function') syncOpenTripStateFromServer();
