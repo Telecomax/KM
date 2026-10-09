@@ -1,4 +1,4 @@
-const CACHE = 'telecomax-km-company-20261009-v61';
+const CACHE = 'telecomax-km-company-20261009-sso-fix-1';
 const ASSETS = ['./index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (e) => {
@@ -9,18 +9,37 @@ self.addEventListener('install', (e) => {
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
+      Promise.all(keys.filter((k) => k.startsWith('telecomax-km-') && k !== CACHE).map((k) => caches.delete(k)))
     )
   );
   self.clients.claim();
 });
 
-// App shell: cache-first. Never intercept the Apps Script submit calls (those are cross-origin POSTs and go straight to network).
+// Fresh HTML picks up backend URL corrections; offline fallback keeps the app shell.
+// API requests (including cross-origin GET config and every POST) bypass this cache.
 self.addEventListener('fetch', (e) => {
-  if (e.request.method !== 'GET') return;
-  e.respondWith(
-    caches.match(e.request).then((cached) => cached || fetch(e.request))
-  );
+  const url = new URL(e.request.url);
+  if (e.request.method !== 'GET' || url.origin !== self.location.origin) return;
+  const shell = new URL('./index.html', self.registration.scope).href;
+  if (e.request.mode === 'navigate') {
+    e.respondWith((async () => {
+      const cache = await caches.open(CACHE);
+      try {
+        const response = await fetch(e.request);
+        if (response.ok && (url.pathname === new URL(shell).pathname || url.pathname === new URL('./', self.registration.scope).pathname)) {
+          await cache.put(shell, response.clone());
+        }
+        return response;
+      } catch (error) {
+        const cached = await cache.match(shell);
+        if (cached) return cached;
+        throw error;
+      }
+    })());
+    return;
+  }
+  if (!ASSETS.some(asset => new URL(asset, self.registration.scope).href === url.href)) return;
+  e.respondWith(caches.open(CACHE).then(cache => cache.match(e.request)).then(cached => cached || fetch(e.request)));
 });
 
 self.addEventListener('notificationclick', (e) => {
