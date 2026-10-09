@@ -88,4 +88,3 @@ V59:
 - Select All + Approve Selected first saves staged changes, then approves and removes approved rows from the current audit view.
 - Config column H Vehicle IDs are mapped to the Driver in column B on the same row.
 - Vehicle dropdown updates automatically when the Start Trip Driver changes.
-
