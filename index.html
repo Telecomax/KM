@@ -2601,7 +2601,7 @@ async function captureMobilePhoto(){
 
 function driverAllowsGallery(driverName){
   const d=String(driverName||'').trim().toLowerCase();
-  return d==='rent' || d==='item transfer';
+  return d==='rent' || d==='item transfer' || d==='unlocated car';
 }
 function currentDriverAllowsGallery(which){
   if(which==='finish'){
@@ -3599,7 +3599,7 @@ $('startForm').addEventListener('submit', async (e) => {
   const canonicalEngineer = validNames.engineer;
   const canonicalDriver = validNames.driver;
   const _lists=getCachedLists(), _dk=String(canonicalDriver||'').trim().toLowerCase();
-  const vehicleOptional=(_dk==='rent' || _dk==='item transfer');
+  const vehicleOptional=(_dk==='rent' || _dk==='item transfer' || _dk==='unlocated car');
   const canonicalVehicle=vehicleOptional ? '' : findRegisteredName($('vehicle').value,((_lists.driverVehicles||{})[_dk]||[]));
   if(!vehicleOptional && !canonicalVehicle)return toast('❌ Please select a valid Vehicle ID for this Driver');
   // Do not create a local open trip until the submit-time GPS request succeeds.
