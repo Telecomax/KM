@@ -140,6 +140,39 @@ html.portal-sso-pending body::before,html.tmx-auth-resolving body::before{conten
   }
 }
 </style>
+
+<style id="tmxV19SingleLineAllowanceRows">
+/* Desktop: one visual line per allowance record. Mobile keeps its card details. */
+@media (min-width:701px) {
+  #records .audit-table { table-layout:fixed!important; min-width:1100px; }
+  #records .audit-table th, #records .audit-table td { box-sizing:border-box; }
+  #records .audit-table tbody tr { height:32px!important; }
+  #records .audit-table tbody td {
+    height:32px!important; max-height:32px!important;
+    padding:2px 7px!important; line-height:20px!important;
+    white-space:nowrap!important; overflow:hidden!important;
+    text-overflow:ellipsis!important; vertical-align:middle!important;
+    font-size:11.5px!important;
+  }
+  /* Hide the second lines: weekday, base city and GPS explanation. */
+  #records .audit-table tbody td .meta { display:none!important; }
+  #records .audit-table tbody td .actions { flex-wrap:nowrap!important; gap:4px!important; align-items:center!important; }
+  #records .audit-table tbody td .actions .btn {
+    min-height:24px!important; height:24px!important; padding:2px 7px!important;
+    line-height:18px!important; font-size:10px!important; white-space:nowrap!important;
+  }
+  #records .audit-table tbody td .status { font-size:10px!important; padding:1px 6px!important; }
+  #records .audit-table th:nth-child(1) { width:2%; }
+  #records .audit-table th:nth-child(2) { width:20%; }
+  #records .audit-table th:nth-child(3) { width:10%; }
+  #records .audit-table th:nth-child(4) { width:17%; }
+  #records .audit-table th:nth-child(5) { width:7%; }
+  #records .audit-table th:nth-child(6) { width:19%; }
+  #records .audit-table th:nth-child(7) { width:8%; }
+  #records .audit-table th:nth-child(8) { width:7%; }
+  #records .audit-table th:nth-child(9) { width:10%; }
+}
+</style>
 </head><body><header><div class="brand"><span>TELECOMAX</span> <small>Operations / Allowance Audit</small></div><div class="header-actions"><button class="btn ghost" type="button" onclick="location.href='./'">← Operations</button><button id="logout" class="btn ghost" style="display:none">Logout</button></div></header><main>
 <section id="login" class="card login" style="display:none"><h2>PM Login</h2><p class="note">Use your management Name + 6-digit PIN.</p><div class="field"><label>Name</label><input id="name" autocomplete="username" placeholder="Enter your name"></div><br><div class="field"><label>PIN</label><input id="pin" type="password" inputmode="numeric" maxlength="6" autocomplete="current-password" placeholder="6-digit PIN"></div><br><button id="loginBtn" class="btn primary">Login</button></section>
 <section id="app" style="display:none"><div class="card"><div class="section-title"><div><h2 style="margin:0">Monthly Allowance Audit</h2></div></div><br><div class="filters">
